@@ -288,31 +288,38 @@ def generate_pie_chart(labels, values, title):
     else:
         wrapped_title = title
         
-    plt.figure(figsize=(7, 7))
+    plt.figure(figsize=(8, 8))
     
     colors = ['#667eea', '#764ba2', '#48bb78', '#ed8936', '#f56565', '#4299e1']
     
-    # Create pie chart with better text visibility
-    wedges, texts, autotexts = plt.pie(values, labels=labels, autopct='%1.1f%%',
+    # Create pie chart with legend instead of labels on pie
+    wedges, texts, autotexts = plt.pie(values, autopct='%1.1f%%',
                                         colors=colors, startangle=90,
-                                        textprops={'fontsize': 9, 'fontweight': '600'},
-                                        pctdistance=0.85)
+                                        textprops={'fontsize': 10, 'fontweight': 'bold'},
+                                        pctdistance=0.85, labeldistance=1.15)
     
     # Make percentage text white and bold
     for autotext in autotexts:
         autotext.set_color('white')
         autotext.set_fontweight('bold')
-        autotext.set_fontsize(9)
+        autotext.set_fontsize(11)
     
-    # Make labels darker and more readable
-    for text in texts:
-        text.set_color('#2d3748')
-        text.set_fontsize(8.5)
-        text.set_fontweight('600')
+    # Add legend outside the pie chart
+    plt.legend(wedges, labels, 
+              title="Options",
+              loc="center left",
+              bbox_to_anchor=(1, 0, 0.5, 1),
+              fontsize=10,
+              title_fontsize=11,
+              frameon=True,
+              fancybox=True,
+              shadow=True)
     
-    plt.title(wrapped_title, fontsize=10, fontweight='bold', pad=20, color='#2d3748')
+    plt.title(wrapped_title, fontsize=11, fontweight='bold', pad=25, color='#2d3748')
     plt.axis('equal')
-    plt.tight_layout(pad=2)
+    
+    # Adjust layout to prevent cutting off legend
+    plt.tight_layout(rect=[0, 0, 0.85, 1])
     
     buffer = io.BytesIO()
     plt.savefig(buffer, format='png', dpi=120, bbox_inches='tight', facecolor='white', edgecolor='none')
