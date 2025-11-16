@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Analytics Dashboard</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; margin: 12px 0 40px; }
+        th, td { border: 1px solid #000; padding: 8px; }
+        h2 { margin-top: 35px; color: darkblue; }
+        h3 { margin-top: 18px; color: green; }
+    </style>
+</head>
+<body>
+
+<h1>Analytics Dashboard</h1>
+
+{% for block in grouped_data %}
+
+    <h2>{{ block.stakeholder|title }} Feedback</h2>
+
+    <!-- Rating -->
+    <h3>Rating-Based Questions</h3>
+    {% if block.rating_data %}
+    <table>
+        <tr>
+            <th>Question</th>
+            <th>Category</th>
+            <th>Average Rating</th>
+        </tr>
+        {% for row in block.rating_data %}
+        <tr>
+            <td>{{ row.question }}</td>
+            <td>{{ row.category }}</td>
+            <td>{{ row.avg_rating }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>No rating data.</p>
+    {% endif %}
+
+    <!-- MCQ -->
+    <h3>MCQ Questions</h3>
+    {% if block.mcq_data %}
+        {% for q in block.mcq_data %}
+            <h4>{{ q.question }} ({{ q.category }})</h4>
+            <table>
+                <tr><th>Option</th><th>Responses</th><th>Percentage</th></tr>
+                {% for opt in q.options %}
+                <tr>
+                    <td>{{ opt.option }}</td>
+                    <td>{{ opt.count }}</td>
+                    <td>{{ opt.percent }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        {% endfor %}
+    {% else %}
+    <p>No MCQ data.</p>
+    {% endif %}
+
+    <hr>
+{% endfor %}
+
+<a href="{% url 'home' %}">⬅ Back to Home</a>
+
+</body>
+</html>

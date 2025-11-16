@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Feedback System - Home</title>
+</head>
+<body>
+    <h1>Welcome to the Feedback System</h1>
+    <p>Select the feedback type you want to submit:</p>
+
+    <ul>
+        <li><a href="{% url 'student_feedback' %}">Student Feedback</a></li>
+        <li><a href="{% url 'alumni_feedback' %}">Alumni Feedback</a></li>
+        <li><a href="{% url 'employer_feedback' %}">Employer Feedback</a></li>
+    </ul>
+
+    <p>
+        <a href="{% url 'analytics_dashboard' %}">View Analytics Dashboard</a>
+    </p>
+</body>
+</html>

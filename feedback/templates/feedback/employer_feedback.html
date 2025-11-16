@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Employer Feedback</title>
+</head>
+<body>
+    <h1>Employer Feedback Form</h1>
+    <form method="POST">
+        {% csrf_token %}
+        {% for q in questions %}
+            <div>
+                <p><strong>{{ q.text }}</strong> ({{ q.category }})</p>
+
+                {% if q.question_type == "rating" %}
+                    <label>Rating:</label>
+                    <select name="q_{{ q.id }}" required>
+                        <option value="">Select rating</option>
+                        {% for i in "12345" %}
+                            <option value="{{ i }}">{{ i }}</option>
+                        {% endfor %}
+                    </select>
+
+                {% elif q.question_type == "mcq" %}
+                    {% for option in q.options.all %}
+                        <label>
+                            <input type="radio" name="q_{{ q.id }}" value="{{ option.text }}" required>
+                            {{ option.text }}
+                        </label><br>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            <hr>
+        {% endfor %}
+        <button type="submit">Submit Feedback</button>
+    </form>
+
+    <p><a href="{% url 'home' %}">Back to Home</a></p>
+</body>
+</html>
