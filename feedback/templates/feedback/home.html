@@ -1,20 +1,41 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Feedback System - Home</title>
-</head>
-<body>
-    <h1>Welcome to the Feedback System</h1>
-    <p>Select the feedback type you want to submit:</p>
+{% extends 'feedback/base.html' %}
 
-    <ul>
-        <li><a href="{% url 'student_feedback' %}">Student Feedback</a></li>
-        <li><a href="{% url 'alumni_feedback' %}">Alumni Feedback</a></li>
-        <li><a href="{% url 'employer_feedback' %}">Employer Feedback</a></li>
-    </ul>
+{% block title %}Feedback System - Home{% endblock %}
 
-    <p>
-        <a href="{% url 'analytics_dashboard' %}">View Analytics Dashboard</a>
-    </p>
-</body>
-</html>
+{% block content %}
+<div class="header">
+    <h1>Department Feedback System</h1>
+    <p>Your feedback helps us improve continuously</p>
+</div>
+
+<div class="card">
+    <h2>Submit Your Feedback</h2>
+    <p style="color: #666; margin-bottom: 2rem;">Select the type of feedback you want to provide:</p>
+    
+    <div class="grid">
+        <div class="grid-item">
+            <h3 style="margin-bottom: auto;">Student Feedback</h3>
+            <p style="margin-bottom: 1rem;">Share your academic experience</p>
+            <a href="{% url 'student_feedback' %}" class="btn btn1">Start Now</a>
+        </div>
+        
+        <div class="grid-item" style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);">
+            <h3  style="margin-bottom: auto;">Alumni Feedback</h3>
+            <p style="margin-bottom: 1rem;">Reflect on your journey</p>
+            <a href="{% url 'alumni_feedback' %}" class="btn btn1">Start Now</a>
+        </div>
+        
+        <div class="grid-item" style="background: linear-gradient(135deg, #f6ad55 0%, #ed8936 100%);">
+            <h3  style="margin-bottom: auto;">Employer Feedback</h3>
+            <p style="margin-bottom: 1rem;">Evaluate our graduates</p>
+            <a href="{% url 'employer_feedback' %}" class="btn btn1">Start Now</a>
+        </div>
+    </div>
+</div>
+
+<div class="card" style="text-align: center;">
+    <h2>View Analytics</h2>
+    <p style="color: #666; margin-bottom: 1.5rem;">Access comprehensive feedback analytics and insights</p>
+    <a href="{% url 'analytics_dashboard' %}" class="btn btn-secondary">Open Dashboard</a>
+</div>
+{% endblock %}

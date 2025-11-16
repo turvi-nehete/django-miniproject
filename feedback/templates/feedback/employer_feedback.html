@@ -1,39 +1,48 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Employer Feedback</title>
-</head>
-<body>
+{% extends 'feedback/base.html' %}
+
+{% block title %}Employer Feedback{% endblock %}
+
+{% block content %}
+<div class="header">
     <h1>Employer Feedback Form</h1>
+    <p>Help us understand how well we prepare our graduates</p>
+</div>
+
+<div class="card">
     <form method="POST">
         {% csrf_token %}
+        
         {% for q in questions %}
-            <div>
-                <p><strong>{{ q.text }}</strong> ({{ q.category }})</p>
-
-                {% if q.question_type == "rating" %}
-                    <label>Rating:</label>
-                    <select name="q_{{ q.id }}" required>
-                        <option value="">Select rating</option>
-                        {% for i in "12345" %}
-                            <option value="{{ i }}">{{ i }}</option>
-                        {% endfor %}
-                    </select>
-
-                {% elif q.question_type == "mcq" %}
-                    {% for option in q.options.all %}
-                        <label>
-                            <input type="radio" name="q_{{ q.id }}" value="{{ option.text }}" required>
-                            {{ option.text }}
-                        </label><br>
+        <div class="question-box">
+            <span class="category">{{ q.category }}</span>
+            <p>{{ q.text }}</p>
+            
+            {% if q.question_type == "rating" %}
+                <label style="color: #666; font-size: 0.9rem; margin-top: 1rem;">Rate from 1 (Poor) to 5 (Excellent):</label>
+                <div class="rating-group">
+                    {% for i in "12345" %}
+                    <input type="radio" name="q_{{ q.id }}" id="rating_{{ q.id }}_{{ i }}" value="{{ i }}" required>
+                    <label for="rating_{{ q.id }}_{{ i }}">{{ i }}</label>
                     {% endfor %}
-                {% endif %}
-            </div>
-            <hr>
+                </div>
+            
+            {% elif q.question_type == "mcq" %}
+                <div class="radio-group">
+                    {% for option in q.options.all %}
+                    <label>
+                        <input type="radio" name="q_{{ q.id }}" value="{{ option.text }}" required>
+                        <span>{{ option.text }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
         {% endfor %}
-        <button type="submit">Submit Feedback</button>
+        
+        <div class="btn-group">
+            <button type="submit" class="btn">✓ Submit Feedback</button>
+            <a href="{% url 'home' %}" class="btn btn-secondary">← Back to Home</a>
+        </div>
     </form>
-
-    <p><a href="{% url 'home' %}">Back to Home</a></p>
-</body>
-</html>
+</div>
+{% endblock %}

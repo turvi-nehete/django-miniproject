@@ -1,49 +1,68 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Add New Question</title>
-    <script>
-        function toggleOptions() {
-            const qType = document.getElementById("q-type").value;
-            const optionField = document.getElementById("options-field");
-            optionField.style.display = (qType === "mcq") ? "block" : "none";
-        }
-    </script>
-</head>
-<body>
-    <h1>Add a New Question</h1>
+{% extends 'feedback/base.html' %}
 
+{% block title %}Add New Question{% endblock %}
+
+{% block extra_style %}
+<script>
+    function toggleOptions() {
+        const qType = document.getElementById("q-type").value;
+        const optionField = document.getElementById("options-field");
+        optionField.style.display = (qType === "mcq") ? "block" : "none";
+    }
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="header">
+    <h1>➕ Add New Question</h1>
+    <p>Create custom feedback questions for your stakeholders</p>
+</div>
+
+<div class="card">
     <form method="POST">
         {% csrf_token %}
 
-        <label><strong>Question Text:</strong></label><br>
-        <textarea name="text" rows="2" required></textarea><br><br>
-
-        <label><strong>Category:</strong></label><br>
-        <input type="text" name="category" required><br><br>
-
-        <label><strong>Stakeholder Type:</strong></label><br>
-        <select name="stakeholder_type" required>
-            <option value="student">Student</option>
-            <option value="alumni">Alumni</option>
-            <option value="employer">Employer</option>
-        </select><br><br>
-
-        <label><strong>Question Type:</strong></label><br>
-        <select name="question_type" id="q-type" onchange="toggleOptions()" required>
-            <option value="rating">Rating (1–5)</option>
-            <option value="mcq">Multiple Choice</option>
-        </select><br><br>
-
-        <!-- Hidden unless MCQ is selected -->
-        <div id="options-field" style="display:none;">
-            <label><strong>MCQ Options (comma-separated):</strong></label><br>
-            <input type="text" name="options" placeholder="e.g. Yes, No, Maybe"><br><br>
+        <div class="form-group">
+            <label>Question Text:</label>
+            <textarea name="text" rows="3" required placeholder="Enter your question here..."></textarea>
         </div>
 
-        <button type="submit">Add Question</button>
-    </form>
+        <div class="form-group">
+            <label>Category:</label>
+            <input type="text" name="category" required placeholder="e.g., Teaching, Infrastructure, Skills">
+        </div>
 
-    <p><a href="{% url 'home' %}">Back to Home</a></p>
-</body>
-</html>
+        <div class="form-group">
+            <label>Stakeholder Type:</label>
+            <select name="stakeholder_type" required>
+                <option value="">-- Select Stakeholder --</option>
+                <option value="student">Student</option>
+                <option value="alumni">Alumni</option>
+                <option value="employer">Employer</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Question Type:</label>
+            <select name="question_type" id="q-type" onchange="toggleOptions()" required>
+                <option value="">-- Select Type --</option>
+                <option value="rating">Rating (1–5)</option>
+                <option value="mcq">Multiple Choice</option>
+            </select>
+        </div>
+
+        <div id="options-field" class="form-group" style="display:none;">
+            <label>MCQ Options (comma-separated):</label>
+            <input type="text" name="options" placeholder="e.g., Yes, No, Maybe, Not Sure">
+            <small style="color: #666; display: block; margin-top: 0.5rem;">
+                Separate each option with a comma
+            </small>
+        </div>
+
+        <div class="btn-group">
+            <button type="submit" class="btn">✓ Add Question</button>
+            <a href="{% url 'home' %}" class="btn btn-secondary">← Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,15 +1,18 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Thank You!</title>
-</head>
-<body>
-    <h1>Thank You for Your Feedback!</h1>
-    <p>Your responses have been submitted successfully.</p>
+{% extends 'feedback/base.html' %}
 
-    <p>
-        <a href="{% url 'home' %}">Go Back to Home</a> |
-        <a href="{% url 'analytics_dashboard' %}">View Analytics</a>
+{% block title %}Thank You!{% endblock %}
+
+{% block content %}
+<div class="card" style="text-align: center; max-width: 600px; margin: 5rem auto;">
+    <div class="success-icon">✓</div>
+    <h2 style="color: #48bb78; font-size: 2.5rem; margin-bottom: 1rem;">Thank You!</h2>
+    <p style="font-size: 1.2rem; color: #666; margin-bottom: 2rem;">
+        Your feedback has been submitted successfully. We truly appreciate your time and valuable insights!
     </p>
-</body>
-</html>
+    
+    <div class="btn-group" style="justify-content: center;">
+        <a href="{% url 'home' %}" class="btn">Go to Home</a>
+        <a href="{% url 'analytics_dashboard' %}" class="btn btn-secondary">View Analytics</a>
+    </div>
+</div>
+{% endblock %}
