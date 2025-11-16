@@ -8,10 +8,36 @@
     <p>Comprehensive feedback insights and trends</p>
 </div>
 
+<!-- Overall Comparison Chart -->
+{% if overall_chart %}
+<div class="card">
+    <h2>Overall Performance Comparison</h2>
+    <div style="text-align: center; margin: 2rem 0;">
+        <img src="data:image/png;base64,{{ overall_chart }}" 
+             alt="Overall Comparison" 
+             style="max-width: 100%; height: auto; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+    </div>
+</div>
+{% endif %}
+
+<!-- Stakeholder-wise Analysis -->
 {% for block in grouped_data %}
 <div class="card">
     <h2>{{ block.stakeholder|title }} Feedback Analysis</h2>
 
+    <!-- Rating Chart -->
+    {% if block.rating_chart %}
+    <div style="margin: 2rem 0;">
+        <h3>Rating Analysis</h3>
+        <div style="text-align: center; background: #f7fafc; padding: 1.5rem; border-radius: 15px;">
+            <img src="data:image/png;base64,{{ block.rating_chart }}" 
+                 alt="{{ block.stakeholder }} ratings" 
+                 style="max-width: 100%; height: auto; border-radius: 10px;">
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Rating Data Table -->
     <h3>Rating-Based Questions</h3>
     {% if block.rating_data %}
     <table>
@@ -20,6 +46,7 @@
                 <th>Question</th>
                 <th>Category</th>
                 <th style="text-align: center;">Average Rating</th>
+                <th style="text-align: center;">Status</th>
             </tr>
         </thead>
         <tbody>
@@ -28,12 +55,25 @@
                 <td>{{ row.question }}</td>
                 <td><span style="background: #e2e8f0; padding: 5px 12px; border-radius: 15px; font-size: 0.9rem;">{{ row.category }}</span></td>
                 <td style="text-align: center;">
-                    {% if row.avg_rating >= 4 %}
+                    {% if row.avg_rating == "No data" %}
+                    <span style="color: #999;">No data</span>
+                    {% elif row.avg_rating >= 4 %}
                     <strong style="color: #48bb78; font-size: 1.1rem;">{{ row.avg_rating }}/5</strong>
                     {% elif row.avg_rating >= 3 %}
                     <strong style="color: #ed8936; font-size: 1.1rem;">{{ row.avg_rating }}/5</strong>
                     {% else %}
                     <strong style="color: #f56565; font-size: 1.1rem;">{{ row.avg_rating }}/5</strong>
+                    {% endif %}
+                </td>
+                <td style="text-align: center;">
+                    {% if row.avg_rating == "No data" %}
+                    <span style="background: #e2e8f0; color: #666; padding: 5px 12px; border-radius: 15px; font-size: 0.85rem;">N/A</span>
+                    {% elif row.avg_rating >= 4 %}
+                    <span style="background: #c6f6d5; color: #22543d; padding: 5px 12px; border-radius: 15px; font-size: 0.85rem;">✓ Excellent</span>
+                    {% elif row.avg_rating >= 3 %}
+                    <span style="background: #feebc8; color: #7c2d12; padding: 5px 12px; border-radius: 15px; font-size: 0.85rem;">⚠ Good</span>
+                    {% else %}
+                    <span style="background: #fed7d7; color: #742a2a; padding: 5px 12px; border-radius: 15px; font-size: 0.85rem;">⚠ Needs Improvement</span>
                     {% endif %}
                 </td>
             </tr>
@@ -46,7 +86,25 @@
     </div>
     {% endif %}
 
+    <!-- MCQ Charts and Data -->
     <h3>Multiple Choice Questions</h3>
+    {% if block.mcq_charts %}
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem; margin: 2rem 0;">
+            {% for mcq in block.mcq_charts %}
+            <div style="background: #f7fafc; padding: 1.5rem; border-radius: 15px; text-align: center;">
+                <h4 style="margin-bottom: 1rem; color: #2d3748;">{{ mcq.question|truncatewords:10 }}</h4>
+                <span style="background: #667eea; color: white; padding: 5px 12px; border-radius: 15px; font-size: 0.85rem; display: inline-block; margin-bottom: 1rem;">{{ mcq.category }}</span>
+                {% if mcq.chart %}
+                <img src="data:image/png;base64,{{ mcq.chart }}" 
+                     alt="{{ mcq.question }}" 
+                     style="max-width: 100%; height: auto; border-radius: 10px;">
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- MCQ Data Table -->
     {% if block.mcq_data %}
         {% for q in block.mcq_data %}
         <h4>{{ q.question }} <span style="color: #666; font-size: 0.9rem; font-weight: normal;">({{ q.category }})</span></h4>
