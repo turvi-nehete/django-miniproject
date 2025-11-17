@@ -1,10 +1,10 @@
 {% extends 'feedback/base.html' %}
 
-{% block title %}Feedback System - Home{% endblock %}
+{% block title %}Public Feedback Portal{% endblock %}
 
 {% block content %}
 <div class="header">
-    <h1>Department Feedback System</h1>
+    <h1>🎓 Department Feedback System</h1>
     <p>Your feedback helps us improve continuously</p>
 </div>
 
@@ -14,28 +14,22 @@
     
     <div class="grid">
         <div class="grid-item">
-            <h3 style="margin-bottom: auto;">Student Feedback</h3>
+            <h3>👨‍🎓 Student Feedback</h3>
             <p style="margin-bottom: 1rem;">Share your academic experience</p>
-            <a href="{% url 'student_feedback' %}" class="btn btn1">Start Now</a>
+            <a href="{% url 'student_feedback' %}" class="btn">Start Now</a>
         </div>
         
         <div class="grid-item" style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);">
-            <h3  style="margin-bottom: auto;">Alumni Feedback</h3>
+            <h3>🎯 Alumni Feedback</h3>
             <p style="margin-bottom: 1rem;">Reflect on your journey</p>
-            <a href="{% url 'alumni_feedback' %}" class="btn btn1">Start Now</a>
+            <a href="{% url 'alumni_feedback' %}" class="btn btn-secondary">Start Now</a>
         </div>
         
         <div class="grid-item" style="background: linear-gradient(135deg, #f6ad55 0%, #ed8936 100%);">
-            <h3  style="margin-bottom: auto;">Employer Feedback</h3>
+            <h3>💼 Employer Feedback</h3>
             <p style="margin-bottom: 1rem;">Evaluate our graduates</p>
-            <a href="{% url 'employer_feedback' %}" class="btn btn1">Start Now</a>
+            <a href="{% url 'employer_feedback' %}" class="btn">Start Now</a>
         </div>
     </div>
-</div>
-
-<div class="card" style="text-align: center;">
-    <h2>View Analytics</h2>
-    <p style="color: #666; margin-bottom: 1.5rem;">Access comprehensive feedback analytics and insights</p>
-    <a href="{% url 'analytics_dashboard' %}" class="btn btn-secondary">Open Dashboard</a>
 </div>
 {% endblock %}

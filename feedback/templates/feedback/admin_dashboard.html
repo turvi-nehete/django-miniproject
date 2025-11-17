@@ -1,0 +1,57 @@
+{% extends 'feedback/base.html' %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="header">
+    <h1>👨‍💼 Admin Dashboard</h1>
+    <p>Welcome, {{ user.first_name|default:user.username }}!</p>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+    <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+        {{ message }}
+    </div>
+    {% endfor %}
+{% endif %}
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <h3>{{ total_users }}</h3>
+        <p>👥 Total Users</p>
+    </div>
+    <div class="stat-card" style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);">
+        <h3>{{ total_questions }}</h3>
+        <p>❓ Questions</p>
+    </div>
+    <div class="stat-card" style="background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);">
+        <h3>{{ total_responses }}</h3>
+        <p>📝 Responses</p>
+    </div>
+</div>
+
+<div class="card">
+    <h2>🎯 Quick Actions</h2>
+    <div class="btn-group">
+        <a href="{% url 'add_user' %}" class="btn btn-primary">👤 Add New User</a>
+        <a href="{% url 'manage_users' %}" class="btn btn-secondary">👥 Manage Users</a>
+        <a href="{% url 'add_question' %}" class="btn btn-primary">❓ Add Question</a>
+        <a href="{% url 'analytics_dashboard' %}" class="btn btn-secondary">📊 View Analytics</a>
+    </div>
+</div>
+
+<div class="card" style="text-align: center;">
+    <h2>🔗 Public Feedback Links</h2>
+    <p style="color: #666; margin-bottom: 1.5rem;">Share these links with students, alumni, and employers:</p>
+    <div class="btn-group" style="justify-content: center;">
+        <a href="{% url 'student_feedback' %}" class="btn btn-secondary" target="_blank">📚 Student Form</a>
+        <a href="{% url 'alumni_feedback' %}" class="btn btn-secondary" target="_blank">🎓 Alumni Form</a>
+        <a href="{% url 'employer_feedback' %}" class="btn btn-secondary" target="_blank">💼 Employer Form</a>
+    </div>
+</div>
+
+<div style="text-align: center; margin-top: 2rem;">
+    <a href="{% url 'logout' %}" class="btn btn-danger">🚪 Logout</a>
+</div>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends 'feedback/base.html' %}
+
+{% block title %}Manage Users{% endblock %}
+
+{% block content %}
+<div class="header">
+    <h1>👥 Manage Users</h1>
+    <p>View and manage all users</p>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+    <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+        {{ message }}
+    </div>
+    {% endfor %}
+{% endif %}
+
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h2>All Users ({{ users.count }})</h2>
+        <a href="{% url 'add_user' %}" class="btn btn-primary">+ Add New User</a>
+    </div>
+    
+    {% if users %}
+    <table>
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Joined</th>
+                <th style="text-align: center;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in users %}
+            <tr>
+                <td><strong>{{ u.username }}</strong></td>
+                <td>{{ u.first_name }} {{ u.last_name }}</td>
+                <td>{{ u.email }}</td>
+                <td>{{ u.date_joined|date:"M d, Y" }}</td>
+                <td style="text-align: center;">
+                    {% if u != user %}
+                    <a href="{% url 'delete_user' u.id %}" 
+                       onclick="return confirm('Are you sure you want to delete user {{ u.username }}?')"
+                       style="color: #f56565; text-decoration: none; font-weight: 600;">
+                        🗑️ Delete
+                    </a>
+                    {% else %}
+                    <span style="color: #999;">You</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="color: #666; text-align: center; padding: 2rem;">No users found</p>
+    {% endif %}
+</div>
+
+<div style="text-align: center; margin-top: 2rem;">
+    <a href="{% url 'home' %}" class="btn btn-secondary">← Back to Dashboard</a>
+</div>
+{% endblock %}

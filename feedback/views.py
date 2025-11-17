@@ -1,21 +1,109 @@
-from django.shortcuts import render, redirect
-from django.db.models import Avg
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.contrib import messages
+from django.db.models import Avg
 from .models import Question, FeedbackResponse, Option
 import matplotlib
-matplotlib.use('Agg')  # Use non-GUI backend
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import io
 import base64
 
-# Homepage view
-def home_view(request):
-    return render(request, 'feedback/home.html')
+# ==================== AUTHENTICATION ====================
 
+def login_view(request):
+    if request.user.is_authenticated:
+        return redirect('home')
+    
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        
+        user = authenticate(request, username=username, password=password)
+        
+        if user is not None:
+            login(request, user)
+            return redirect('home')
+        else:
+            messages.error(request, 'Invalid username or password')
+    
+    return render(request, 'feedback/login.html')
 
-# Feedback form for students
+@login_required
+def logout_view(request):
+    logout(request)
+    messages.success(request, 'Logged out successfully')
+    return redirect('login')
+
+# ==================== ADMIN DASHBOARD ====================
+
+@login_required
+def admin_dashboard(request):
+    total_users = User.objects.count()
+    total_questions = Question.objects.count()
+    total_responses = FeedbackResponse.objects.count()
+    
+    recent_responses = FeedbackResponse.objects.all().order_by('-created_at')[:5]
+    
+    context = {
+        'total_users': total_users,
+        'total_questions': total_questions,
+        'total_responses': total_responses,
+        'recent_responses': recent_responses,
+    }
+    return render(request, 'feedback/admin_dashboard.html', context)
+
+# ==================== USER MANAGEMENT ====================
+
+@login_required
+def add_user_view(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        
+        if User.objects.filter(username=username).exists():
+            messages.error(request, 'Username already exists')
+        else:
+            User.objects.create_user(
+                username=username,
+                email=email,
+                password=password,
+                first_name=first_name,
+                last_name=last_name
+            )
+            messages.success(request, f'User "{username}" created successfully!')
+            return redirect('manage_users')
+    
+    return render(request, 'feedback/add_user.html')
+
+@login_required
+def manage_users_view(request):
+    users = User.objects.all().order_by('-date_joined')
+    return render(request, 'feedback/manage_users.html', {'users': users})
+
+@login_required
+def delete_user_view(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    
+    if user == request.user:
+        messages.error(request, 'You cannot delete yourself')
+    else:
+        username = user.username
+        user.delete()
+        messages.success(request, f'User "{username}" deleted successfully')
+    
+    return redirect('manage_users')
+
+# ==================== PUBLIC FEEDBACK FORMS (No Login) ====================
+
 def student_feedback_view(request):
     questions = Question.objects.filter(stakeholder_type='student')
+    
     if request.method == 'POST':
         for q in questions:
             answer = request.POST.get(f'q_{q.id}')
@@ -29,8 +117,6 @@ def student_feedback_view(request):
     
     return render(request, 'feedback/student_feedback.html', {'questions': questions})
 
-
-# Feedback form for alumni
 def alumni_feedback_view(request):
     questions = Question.objects.filter(stakeholder_type='alumni')
     
@@ -47,8 +133,6 @@ def alumni_feedback_view(request):
     
     return render(request, 'feedback/alumni_feedback.html', {'questions': questions})
 
-
-# Feedback form for employers
 def employer_feedback_view(request):
     questions = Question.objects.filter(stakeholder_type='employer')
     
@@ -65,13 +149,12 @@ def employer_feedback_view(request):
     
     return render(request, 'feedback/employer_feedback.html', {'questions': questions})
 
-
-# Thank you page
 def thank_you_view(request):
     return render(request, 'feedback/thank_you.html')
 
+# ==================== QUESTION MANAGEMENT ====================
 
-# Add question view
+@login_required
 def add_question_view(request):
     if request.method == "POST":
         text = request.POST.get('text')
@@ -86,29 +169,29 @@ def add_question_view(request):
                 stakeholder_type=stakeholder_type,
                 question_type=question_type
             )
-            # Handle MCQ options if provided
+            
             if question_type == "mcq":
                 options = request.POST.get('options')
                 if options:
                     for opt in options.split(','):
                         Option.objects.create(question=question, text=opt.strip())
-
+            
+            messages.success(request, 'Question added successfully!')
             return redirect('home')
 
     return render(request, 'feedback/add_question.html')
 
+# ==================== ANALYTICS ====================
 
-# Analytics dashboard with charts
+@login_required
 def analytics_dashboard_view(request):
     stakeholders = ['student', 'alumni', 'employer']
     grouped_data = []
 
     for st in stakeholders:
-        # Questions by type and stakeholder
         rating_qs = Question.objects.filter(stakeholder_type=st, question_type='rating')
         mcq_qs = Question.objects.filter(stakeholder_type=st, question_type='mcq')
 
-        # Rating data
         rating_data = []
         question_labels = []
         avg_ratings = []
@@ -125,17 +208,15 @@ def analytics_dashboard_view(request):
             })
             
             if ratings:
-                question_labels.append(q.text)  # Full question text, no truncation
+                question_labels.append(q.text)
                 avg_ratings.append(avg_rating)
 
-        # Generate Bar Chart for Ratings
         rating_chart = None
         if avg_ratings:
             rating_chart = generate_bar_chart(question_labels, avg_ratings, 
                                               f'{st.title()} - Average Ratings',
                                               'Questions', 'Average Rating (out of 5)')
 
-        # MCQ data
         mcq_data = []
         mcq_charts = []
         
@@ -158,16 +239,14 @@ def analytics_dashboard_view(request):
                 'options': options
             })
             
-            # Generate Pie Chart for each MCQ
             if total > 0:
-                pie_chart = generate_pie_chart(option_labels, option_counts, q.text)  # Full question text
+                pie_chart = generate_pie_chart(option_labels, option_counts, q.text)
                 mcq_charts.append({
                     'question': q.text,
                     'category': q.category,
                     'chart': pie_chart
                 })
 
-        # Add to final grouped result
         grouped_data.append({
             'stakeholder': st,
             'rating_data': rating_data,
@@ -176,7 +255,6 @@ def analytics_dashboard_view(request):
             'mcq_charts': mcq_charts
         })
 
-    # Generate Overall Comparison Chart
     overall_chart = generate_overall_comparison(stakeholders)
 
     return render(request, 'feedback/analytics_dashboard.html', {
@@ -184,14 +262,12 @@ def analytics_dashboard_view(request):
         'overall_chart': overall_chart
     })
 
+# ==================== CHART GENERATION ====================
 
 def generate_bar_chart(labels, values, title, xlabel, ylabel):
-    """Generate a bar chart and return as base64 encoded image"""
-    # Wrap long labels into multiple lines
     wrapped_labels = []
     for label in labels:
         if len(label) > 25:
-            # Split into multiple lines, max 25 chars per line
             words = label.split()
             lines = []
             current_line = []
@@ -210,22 +286,19 @@ def generate_bar_chart(labels, values, title, xlabel, ylabel):
             if current_line:
                 lines.append(' '.join(current_line))
             
-            wrapped_labels.append('\n'.join(lines[:3]))  # Max 3 lines
+            wrapped_labels.append('\n'.join(lines[:3]))
         else:
             wrapped_labels.append(label)
     
-    # Adjust figure size based on number of items and label length
     width = min(14, max(10, len(labels) * 1.5))
-    height = 6.5  # Increased height for wrapped labels
+    height = 6.5
     plt.figure(figsize=(width, height))
     
-    # Create color gradient based on values
     colors = ['#f56565' if v < 3 else '#ed8936' if v < 4 else '#48bb78' for v in values]
     
     bars = plt.bar(range(len(wrapped_labels)), values, color=colors, alpha=0.85, 
                    edgecolor='#2d3748', linewidth=1.2, width=0.65)
     
-    # Add value labels on top of bars
     for i, (bar, val) in enumerate(zip(bars, values)):
         height = bar.get_height()
         plt.text(bar.get_x() + bar.get_width()/2., height + 0.1,
@@ -236,18 +309,15 @@ def generate_bar_chart(labels, values, title, xlabel, ylabel):
     plt.ylabel(ylabel, fontsize=11, fontweight='600', color='#4a5568')
     plt.title(title, fontsize=12, fontweight='bold', pad=15, color='#2d3748')
     
-    # Set x-axis with wrapped labels
     plt.xticks(range(len(wrapped_labels)), wrapped_labels, 
                rotation=0, ha='center', fontsize=9, multialignment='center')
     plt.yticks(fontsize=9)
     plt.ylim(0, 5.5)
     plt.grid(axis='y', alpha=0.2, linestyle='--', linewidth=0.8)
     
-    # Add more space at bottom for labels
     plt.subplots_adjust(bottom=0.3)
     plt.tight_layout()
     
-    # Convert plot to base64 string
     buffer = io.BytesIO()
     plt.savefig(buffer, format='png', dpi=120, bbox_inches='tight', facecolor='white', edgecolor='none')
     buffer.seek(0)
@@ -258,13 +328,10 @@ def generate_bar_chart(labels, values, title, xlabel, ylabel):
     graphic = base64.b64encode(image_png).decode('utf-8')
     return graphic
 
-
 def generate_pie_chart(labels, values, title):
-    """Generate a pie chart and return as base64 encoded image"""
     if sum(values) == 0:
         return None
     
-    # Wrap long title into multiple lines
     if len(title) > 50:
         words = title.split()
         lines = []
@@ -284,7 +351,7 @@ def generate_pie_chart(labels, values, title):
         if current_line:
             lines.append(' '.join(current_line))
         
-        wrapped_title = '\n'.join(lines[:3])  # Max 3 lines
+        wrapped_title = '\n'.join(lines[:3])
     else:
         wrapped_title = title
         
@@ -292,19 +359,16 @@ def generate_pie_chart(labels, values, title):
     
     colors = ['#667eea', '#764ba2', '#48bb78', '#ed8936', '#f56565', '#4299e1']
     
-    # Create pie chart with legend instead of labels on pie
     wedges, texts, autotexts = plt.pie(values, autopct='%1.1f%%',
                                         colors=colors, startangle=90,
                                         textprops={'fontsize': 10, 'fontweight': 'bold'},
                                         pctdistance=0.85, labeldistance=1.15)
     
-    # Make percentage text white and bold
     for autotext in autotexts:
         autotext.set_color('white')
         autotext.set_fontweight('bold')
         autotext.set_fontsize(11)
     
-    # Add legend outside the pie chart
     plt.legend(wedges, labels, 
               title="Options",
               loc="center left",
@@ -318,7 +382,6 @@ def generate_pie_chart(labels, values, title):
     plt.title(wrapped_title, fontsize=11, fontweight='bold', pad=25, color='#2d3748')
     plt.axis('equal')
     
-    # Adjust layout to prevent cutting off legend
     plt.tight_layout(rect=[0, 0, 0.85, 1])
     
     buffer = io.BytesIO()
@@ -331,9 +394,7 @@ def generate_pie_chart(labels, values, title):
     graphic = base64.b64encode(image_png).decode('utf-8')
     return graphic
 
-
 def generate_overall_comparison(stakeholders):
-    """Generate overall comparison chart across all stakeholders"""
     stakeholder_avgs = []
     labels = []
     
@@ -360,7 +421,6 @@ def generate_overall_comparison(stakeholders):
     bars = plt.barh(labels, stakeholder_avgs, color=colors, alpha=0.85, 
                     edgecolor='#2d3748', linewidth=1.2, height=0.6)
     
-    # Add value labels
     for i, (bar, val) in enumerate(zip(bars, stakeholder_avgs)):
         plt.text(val + 0.08, bar.get_y() + bar.get_height()/2, 
                 f'{val:.2f}/5',
